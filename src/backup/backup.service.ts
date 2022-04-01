@@ -1,8 +1,8 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bull';
 import Archiver from '../archiver/archiver';
-import { Deta } from 'deta';
 import configuration from '../config/configuration';
+import { Deta } from '../deta';
 
 @Processor('backup')
 export class BackupService {
@@ -14,10 +14,9 @@ export class BackupService {
     const { path } = job.data;
     const isFolderEmpty = await this.archiver.isFolderEmpty(path);
     if (!isFolderEmpty) {
-      const archivedFile = await this.archiver.archive(path);
       const deta = Deta(config.deta.projectKey);
-      const drive = deta.Drive(config.deta.drive);
-      await drive.put('bkp.zip', { path: archivedFile });
+      const drive = deta.DriveWriteStream(config.deta.drive, 'bkp.zip');
+      await this.archiver.archive(path, drive);
     }
   }
 }

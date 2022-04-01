@@ -9,6 +9,7 @@ export class SchedulerService {
 
   async onModuleInit() {
     const config = configuration();
+    await this.queue.empty();
     await this.queue.add(
       'backup',
       {

@@ -1,17 +1,19 @@
 import * as fs from 'fs';
 import * as archiver from 'archiver';
+import DetaWriteStream from '../deta/drive';
 
 export default class Archiver {
-  archive(sourceDir, outPath = 'target.zip') {
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    const stream = fs.createWriteStream(outPath);
+  archive(sourceDir, stream: DetaWriteStream) {
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+    });
 
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       archive.pipe(stream);
       archive.directory(sourceDir, false);
       archive.on('error', (err) => reject(err));
 
-      stream.on('close', () => resolve(outPath));
+      stream.on('close', () => resolve());
       archive.finalize();
     });
   }
